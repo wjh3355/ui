@@ -47,5 +47,5 @@ Engineered by [8StarLabs](https://8starlabs.com).
 
 ## Contact
 
-- Tham Kei Lok (Software Engineer) - [X](https://www.x.com/keiloktql/), [LinkedIn](https://www.linkedin.com/in/keiloktql/)
-- Wang Jia Hua (Documentation Engineer) - [LinkedIn](https://www.linkedin.com/in/jiahua-wang-74ewfb/)
+- Tham Kei Lok (Lead Engineer & Developer Relations) - [X](https://www.x.com/keiloktql/), [LinkedIn](https://www.linkedin.com/in/keiloktql/)
+- Wang Jia Hua (Software Engineer, Documentation) - [LinkedIn](https://www.linkedin.com/in/jiahua-wang-74ewfb/)
