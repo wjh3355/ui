@@ -21,7 +21,6 @@ const CommandMenu = () => {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const down = (e: any) => {
       if ((e.key === "k" && (e.metaKey || e.ctrlKey)) || e.key === "/") {
         if (
@@ -42,7 +41,6 @@ const CommandMenu = () => {
     return () => document.removeEventListener("keydown", down);
   }, []);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const runCommand = useCallback((command: any) => {
     setOpen(false);
     command();
