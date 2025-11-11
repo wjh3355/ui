@@ -5,7 +5,8 @@ import { siteConfig } from "@/lib/config";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import ProgressWrapper from "@/providers/ProgressWrapper";
-import { ThemeProvider } from "next-themes";
+import { ThemeProvider } from "@/providers/ThemeProvider";
+import FaviconWrapper from "@/providers/FaviconWrapper";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -44,9 +45,9 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <FaviconWrapper />
           <SiteHeader />
           <ProgressWrapper>{children}</ProgressWrapper>
-
           <SiteFooter />
         </ThemeProvider>
       </body>

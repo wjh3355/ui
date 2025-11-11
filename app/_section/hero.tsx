@@ -3,13 +3,31 @@ import { Badge } from "@/registry/8starlabs-ui/ui/badge";
 import { Icons } from "@/components/icons";
 import { useTheme } from "next-themes";
 import { cn } from "@/lib/utils";
+import { useEffect, useState } from "react";
 
 interface HeroProps {
   className?: string;
 }
 
 const Hero = ({ className }: HeroProps) => {
-  const { resolvedTheme } = useTheme();
+  const { theme, resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => setMounted(true), []);
+  if (!mounted) return null;
+  const effectiveTheme =
+    theme === "system" ? (resolvedTheme ?? "light") : (theme ?? "light");
+
+  const logo = mounted ? (
+    effectiveTheme === "dark" ? (
+      <Icons.eslUiLogoDarkPrimary className="w-auto h-16" />
+    ) : (
+      <Icons.eslUiLogoLightPrimary className="w-auto h-16" />
+    )
+  ) : (
+    <Icons.eslUiLogoLightPrimary className="w-auto h-16" />
+  );
+
   return (
     <div className={cn("flex flex-col w-full items-center gap-2", className)}>
       <Badge variant="secondary" className="bg-transparent">
@@ -19,12 +37,7 @@ const Hero = ({ className }: HeroProps) => {
         />
         Coming soon!
       </Badge>
-      {resolvedTheme === "dark" ? (
-        <Icons.eslUiLogoDarkPrimary className="w-auto h-16" />
-      ) : (
-        <Icons.eslUiLogoLightPrimary className="w-auto h-16" />
-      )}
-
+      {logo}
       <p className="text-md max-w-3xl text-center">
         A set of beautifully designed components designed for developers who
         want niche, high-utility UI elements that you won&apos;t find in
