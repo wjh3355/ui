@@ -26,6 +26,12 @@ Before using 8starlabs UI, ensure your Next.js project meets these requirements:
 
 Please read the [contributing guide](/CONTRIBUTING.md) for more details. Love 8StarLabsUI? Give us a ⭐ on GitHub!
 
+Huge thank you to our contributors.
+
+<a href="https://github.com/8starlabs/ui/graphs/contributors">
+<img src="https://contrib.rocks/image?repo=8starlabs/ui" />
+</a>
+
 ## License
 
 Licensed under the [MIT license](https://github.com/8starlabs/ui/blob/main/LICENSE.md).
