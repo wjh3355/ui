@@ -10,7 +10,7 @@ const Cards = ({ className }: CardsProps) => {
   return (
     <div
       className={cn(
-        "grid grid-cols-1 xl:grid-cols-4 sm:grid-cols-2 grid-rows-1 md:grid-rows-4 gap-4 size-full",
+        "grid grid-cols-1 xl:grid-cols-4 sm:grid-cols-2 grid-rows-1 gap-4",
         className
       )}
     >
