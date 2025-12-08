@@ -1,14 +1,14 @@
 import {
   Children,
   cloneElement,
+  CSSProperties,
   HTMLAttributes,
-  isValidElement,
   ReactElement
 } from "react";
 import { cn } from "@/lib/utils";
 import { cva, VariantProps } from "class-variance-authority";
 
-export const timelineDotVariants = cva(
+const timelineDotVariants = cva(
   "h-4 w-4 rounded-full border-2 bg-background z-10 box-border", // Base styles
   {
     variants: {
@@ -26,7 +26,7 @@ export const timelineDotVariants = cva(
   }
 );
 
-export const timelineItemVariants = cva(
+const timelineItemVariants = cva(
   "flex flex-col border rounded-md p-4 bg-card text-card-foreground shadow-sm", // Base card styles
   {
     variants: {
@@ -44,6 +44,42 @@ export const timelineItemVariants = cva(
   }
 );
 
+const timelineLayoutVariants = cva("grid relative", {
+  variants: {
+    orientation: {
+      horizontal: "grid-flow-col grid-rows-[min-content_auto_min-content]",
+      vertical: "grid-cols-[1fr_auto_1fr] auto-rows-min"
+    }
+  },
+  defaultVariants: {
+    orientation: "horizontal"
+  }
+});
+
+const timelineItemContainerVariants = cva("flex relative", {
+  variants: {
+    orientation: {
+      horizontal: "w-full justify-center",
+      vertical: "h-full items-center" // Vertical items need to center vertically
+    },
+    side: {
+      // Logic for "Before Line" (on top / left) vs "After Line" (on bottom / right)
+      before: "",
+      after: ""
+    }
+  },
+  compoundVariants: [
+    // Horizontal + Top (Even)
+    { orientation: "horizontal", side: "before", class: "items-end pb-4" },
+    // Horizontal + Bottom (Odd)
+    { orientation: "horizontal", side: "after", class: "items-start pt-4" },
+    // Vertical + Left (Even)
+    { orientation: "vertical", side: "before", class: "justify-end pr-4" },
+    // Vertical + Right (Odd)
+    { orientation: "vertical", side: "after", class: "justify-start pl-4" }
+  ]
+});
+
 export interface TimelineItemProps
   extends
     HTMLAttributes<HTMLDivElement>,
@@ -52,59 +88,77 @@ export interface TimelineItemProps
   title: string;
   description?: string;
   index?: number;
+
   total?: number;
   cardWidth?: number;
+  maxCardWidth?: number;
+
   alternating?: boolean;
-  alignment?: "top" | "bottom";
+  alignment?: "top/left" | "bottom/right";
+  orientation?: "horizontal" | "vertical";
 }
 
-export interface TimelineProps extends HTMLAttributes<HTMLDivElement> {
+export interface TimelineProps
+  extends
+    HTMLAttributes<HTMLDivElement>,
+    VariantProps<typeof timelineLayoutVariants> {
   alternating?: boolean;
-  alignment?: "top" | "bottom";
+  alignment?: "top/left" | "bottom/right";
 
-  itemSpacing?: number;
-  itemWidth?: number;
+  horizItemSpacing?: number;
+  horizItemWidth?: number;
+
+  vertItemSpacing?: number;
+  vertItemMaxWidth?: number;
+
+  orientation: "horizontal" | "vertical";
 }
 
 export function Timeline({
   children,
   className,
-  itemWidth = 220,
-  itemSpacing = 130,
+  horizItemWidth = 220,
+  horizItemSpacing = 130,
+  vertItemSpacing = 100,
+  vertItemMaxWidth = 400,
   alternating = true,
-  alignment = "top",
+  alignment = "top/left",
+  orientation = "horizontal",
   ...props
 }: TimelineProps) {
-  const spillover = Math.max(0, (itemWidth - itemSpacing) / 2);
-  const safePadding = spillover + 16; // 16px base padding
+  const isVertical = orientation === "vertical";
+
+  const spillover = Math.max(0, (horizItemWidth - horizItemSpacing) / 2);
+  const safePadding = spillover + 16;
 
   return (
-    <div
-      className={cn("w-full overflow-x-auto py-8", className)}
-      {...props}
-      id="timeline-container"
-    >
+    <div className={cn("py-8", className)} {...props} id="timeline-container">
       <div
         id="timeline-grid"
-        className="min-w-max grid relative"
-        style={{
-          gridAutoFlow: "column",
-          gridAutoColumns: `${itemSpacing}px`,
-          gridTemplateRows: "auto auto auto",
-          paddingLeft: `${safePadding}px`,
-          paddingRight: `${safePadding}px`
-        }}
+        className={timelineLayoutVariants({ orientation })}
+        style={
+          isVertical
+            ? {
+                gridAutoRows: `${vertItemSpacing}px` // Vertical Gap
+              }
+            : {
+                gridAutoColumns: `${horizItemSpacing}px`, // Horizontal Spacing
+                paddingLeft: `${safePadding}px`, // Bumper padding
+                paddingRight: `${safePadding}px`
+              }
+        }
+        {...props}
       >
         {Children.map(children, (child, index) =>
-          isValidElement(child)
-            ? cloneElement(child as ReactElement<any>, {
-                index,
-                total: Children.count(children),
-                cardWidth: itemWidth,
-                alternating,
-                alignment
-              })
-            : null
+          cloneElement(child as ReactElement<any>, {
+            index,
+            orientation,
+            total: Children.count(children),
+            cardWidth: horizItemWidth,
+            maxCardWidth: vertItemMaxWidth,
+            alternating,
+            alignment
+          })
         )}
       </div>
     </div>
@@ -113,39 +167,62 @@ export function Timeline({
 
 export function TimelineItem({
   className,
-  variant = "default",
+  variant,
   date,
   title,
   description,
   index = 0,
   total = 0,
-  cardWidth = 220,
-  alternating = true,
-  alignment = "top",
+  cardWidth,
+  maxCardWidth,
+  alternating,
+  alignment,
+  orientation,
   ...props
 }: TimelineItemProps) {
-  const isOnTop = alternating ? index % 2 === 0 : alignment === "top";
+  const isEven = index % 2 === 0;
+  const isVertical = orientation === "vertical";
+
+  // Determine "side" based on index
+  const side = alternating
+    ? isEven
+      ? "before"
+      : "after"
+    : alignment === "top/left"
+      ? "before"
+      : "after";
+
+  // Dynamic Grid Positioning
+  const gridStyle: CSSProperties = isVertical
+    ? {
+        gridColumn: side === "before" ? 1 : 3,
+        gridRow: index + 1
+      }
+    : {
+        gridColumn: index + 1,
+        gridRow: side === "before" ? 1 : 3
+      };
+
+  const cardStyle: CSSProperties = isVertical
+    ? {
+        maxWidth: `${maxCardWidth}px`
+      }
+    : {
+        width: `${cardWidth}px`,
+        minWidth: `${cardWidth}px`,
+        maxWidth: `${cardWidth}px`
+      };
 
   return (
     <>
       <div
         id={`timeline-item-${index}-container`}
-        className={cn(
-          "flex w-full justify-center",
-          isOnTop ? "items-end pb-2" : "items-start pt-2"
-        )}
-        style={{
-          gridColumn: index + 1,
-          gridRow: isOnTop ? 1 : 3,
-          overflow: "visible"
-        }}
+        className={timelineItemContainerVariants({ orientation, side })}
+        style={gridStyle}
       >
         <div
           id={`timeline-item-${index}`}
-          style={{
-            width: `${cardWidth}px`,
-            minWidth: `${cardWidth}px`
-          }}
+          style={cardStyle}
           className={cn(
             timelineItemVariants({ variant }),
             "shrink-0",
@@ -166,13 +243,19 @@ export function TimelineItem({
       <div
         id={`timeline-item-${index}-middle`}
         className="relative flex items-center justify-center"
-        style={{
-          gridColumn: index + 1,
-          gridRow: 2
-        }}
+        style={
+          isVertical
+            ? { gridColumn: 2, gridRow: index + 1, height: "100%" }
+            : { gridColumn: index + 1, gridRow: 2, width: "100%" }
+        }
       >
         <div
-          className="absolute w-full h-1 bg-muted"
+          className={cn(
+            "absolute bg-muted",
+            index === 0 ? "rounded-l-full" : "",
+            index === total - 1 ? "rounded-r-full" : "",
+            isVertical ? "h-full w-1 top-0" : "w-full h-1 left-0"
+          )}
           id={`timeline-item-${index}-line`}
         />
 
@@ -216,107 +299,20 @@ const timelineData: TimelineItemProps[] = [
       "Database Setup Extravaganza with Lots of Unnecessary Complexity for Testing Purposes Only",
     description:
       "Configured databases, tables, and initial seed data for testing. This included hundreds of tables, dozens of indexes, and a complicated schema that will never be used in production. Lorem ipsum, dolor sit amet consectetur adipisicing elit. Ea nostrum officiis laborum debitis error hic omnis architecto, consectetur vitae atque, temporibus, alias minus a dolore voluptate sed quam ratione placeat!",
-    date: new Date("2023-02-01")
-  },
-  {
-    title:
-      "Backend Development. Lorem ipsum, dolor sit amet consectetur adipisicing elit. Ea nostrum officiis laborum debitis error hic omnis architecto, consectetur vitae atque, temporibus, alias minus a dolore voluptate sed quam ratione placeat!",
-    description:
-      "Implemented API endpoints, authentication, and core business logic.",
-    date: new Date("2023-02-15")
-  },
-  {
-    title: "Frontend Development",
-    description:
-      "Built user interface components with responsive layouts, ensuring pixel-perfect alignment across all browsers, including Internet Explorer 11.",
-    date: new Date("2023-02-28"),
-    variant: "warning"
-  },
-  {
-    title: "Integration Testing",
-    description: "Tested interaction between backend and frontend modules.",
-    date: new Date("2023-03-10")
-  },
-  {
-    title: "Bug Fixing Marathon",
-    description:
-      "Resolved critical bugs discovered during testing, improving system stability. Some bugs were so obscure they only appeared once every 10,000 interactions.",
-    date: new Date("2023-03-20"),
+    date: new Date("2023-02-01"),
     variant: "error"
-  },
-  {
-    title: "Client Review",
-    description: "Presented working prototype to the client for feedback.",
-    date: new Date("2023-03-25")
-  },
-  {
-    title: "Performance Optimization",
-    description: "Optimized queries and UI rendering for faster performance.",
-    date: new Date("2023-04-01")
-  },
-  {
-    title: "User Acceptance Testing",
-    description:
-      "Supported client testing sessions and logged user feedback. Some sessions included dozens of simultaneous users interacting with every feature imaginable.",
-    date: new Date("2023-04-10")
-  },
-  {
-    title: "Documentation",
-    description: "Created technical documentation and user manuals.",
-    date: new Date("2023-04-15")
-  },
-  {
-    title: "Deployment Preparation",
-    description: "Configured servers, CI/CD pipelines, and deployment scripts.",
-    date: new Date("2023-04-20")
-  },
-  {
-    title: "Go Live Celebration with Confetti and Fireworks",
-    description:
-      "Officially launched the system for production use. The team celebrated with a massive online party that included streaming music, confetti, and shoutouts.",
-    date: new Date("2023-04-25"),
-    variant: "success"
-  },
-  {
-    title: "Post-Launch Monitoring",
-    description:
-      "Monitored system performance and error logs after deployment.",
-    date: new Date("2023-04-30")
-  },
-  {
-    title: "Feature Enhancement",
-    description: "Started adding new requested features and improvements.",
-    date: new Date("2023-05-05")
-  },
-  {
-    title: "Security Audit",
-    description:
-      "Performed a comprehensive security review and fixed vulnerabilities.",
-    date: new Date("2023-05-10")
-  },
-  {
-    title: "Team Retrospective",
-    description:
-      "Held a meeting to discuss what went well and what could be improved.",
-    date: new Date("2023-05-15")
-  },
-  {
-    title: "Client Handoff",
-    description:
-      "Provided final deliverables and handed over source code to client.",
-    date: new Date("2023-05-20")
-  },
-  {
-    title: "Project Closure",
-    description: "Archived project materials and formally closed the project.",
-    date: new Date("2023-05-25")
   }
 ];
 
 export default function TimelineDemo() {
   return (
     <div className="flex justify-center items-center w-screen h-screen">
-      <Timeline alternating={true} alignment="bottom">
+      <Timeline
+        orientation="vertical"
+        alignment="top/left"
+        alternating={true}
+        vertItemSpacing={150}
+      >
         {timelineData.map((item, idx) => (
           <TimelineItem key={idx} {...item} />
         ))}
