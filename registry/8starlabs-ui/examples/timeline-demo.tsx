@@ -1,32 +1,47 @@
-import { TimelineItemProps, Timeline, TimelineItem } from "../blocks/timeline";
+import Timeline, { TimelineItemProps, TimelineItem } from "../blocks/timeline";
 
 const timelineData: TimelineItemProps[] = [
   {
     title: "Project Kickoff",
     description:
-      "Initial meeting with all stakeholders to define project scope.",
-    date: new Date("2023-01-05"),
-    variant: "info"
+      "Initial meeting with stakeholders to define the roadmap and core requirements.",
+    date: new Date("2023-01-01"),
+    variant: "default" // Blue/Gray border (Standard)
   },
   {
-    title: "Requirements Gathering",
+    title: "Research Phase",
     description:
-      "Collected requirements from the client, covering both functional and non-functional aspects. This took several sessions over multiple weeks and included detailed analysis.",
-    date: new Date("2023-01-12"),
-    variant: "success"
+      "Conducted user interviews and competitive analysis to refine the feature set.",
+    date: new Date("2023-01-15"),
+    variant: "info" // Blue (Informational)
   },
   {
-    title: "Design Phase",
-    description: "Created wireframes, mockups, and system design diagrams.",
-    date: new Date("2023-01-20")
-  },
-  {
-    title:
-      "Database Setup Extravaganza with Lots of Unnecessary Complexity for Testing Purposes Only",
+    title: "Prototype Approval",
     description:
-      "Configured databases, tables, and initial seed data for testing. This included hundreds of tables, dozens of indexes, and a complicated schema that will never be used in production.",
+      "Client signed off on the high-fidelity designs and interactive prototype.",
     date: new Date("2023-02-01"),
-    variant: "destructive"
+    variant: "success" // Green (Milestone reached)
+  },
+  {
+    title: "Unexpected API Delays",
+    description:
+      "Third-party integration is taking longer than expected due to rate limiting issues.",
+    date: new Date("2023-02-10"),
+    variant: "warning" // Amber (Caution)
+  },
+  {
+    title: "Critical Database Failure",
+    description:
+      "Data corruption occurred during migration. rollback procedures initiated immediately.",
+    date: new Date("2023-02-14"),
+    variant: "destructive" // Red (Problem)
+  },
+  {
+    title: "Beta Launch",
+    description:
+      "System stabilized and released to the first batch of 500 internal users.",
+    date: new Date("2023-03-01"),
+    variant: "success" // Green (Completion)
   }
 ];
 

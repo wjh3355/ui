@@ -165,7 +165,7 @@ export interface TimelineProps
   vertItemSpacing?: number;
   vertItemMaxWidth?: number;
 
-  orientation: "horizontal" | "vertical";
+  orientation?: "horizontal" | "vertical";
 }
 
 function useHorizontalScroll() {
