@@ -24,6 +24,18 @@ const TransportBadgeCard = () => {
               stationName="Bedok"
               showStationName
             />
+            <TransportBadge
+              system="HK"
+              stationCode={["TW", "TM"]}
+              stationName="Mei Foo"
+              showStationName
+            />
+            <TransportBadge
+              system="HK"
+              stationCode="AE"
+              stationName="Airport"
+              showStationName
+            />
           </div>
         </div>
 
