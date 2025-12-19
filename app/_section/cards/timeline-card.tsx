@@ -59,8 +59,9 @@ const TimelineCard = (props: Props) => {
           <div>
             <h3 className="text-lg font-semibold">Timeline</h3>
             <p className="text-muted-foreground text-sm">
-              A component to display chronological events. Scroll to view the
-              full timeline.
+              A component to display chronological events.
+              <br />
+              Shift + Scroll to navigate horizontally (on desktop).
             </p>
           </div>
 

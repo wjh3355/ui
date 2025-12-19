@@ -204,33 +204,6 @@ function useTimelineContext() {
   return context;
 }
 
-function useHorizontalScroll() {
-  const elRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const el = elRef.current;
-    if (el) {
-      const onWheel = (e: WheelEvent) => {
-        if (e.deltaY === 0) return;
-        // Prevent page scroll only if we can still scroll the element
-        if (
-          (e.deltaY > 0 && el.scrollLeft + el.clientWidth < el.scrollWidth) ||
-          (e.deltaY < 0 && el.scrollLeft > 0)
-        ) {
-          e.preventDefault();
-          el.scrollTo({
-            left: el.scrollLeft + e.deltaY,
-            behavior: "smooth" // Optional: makes it smoother but slower
-          });
-        }
-      };
-      el.addEventListener("wheel", onWheel);
-      return () => el.removeEventListener("wheel", onWheel);
-    }
-  }, []);
-  return elRef;
-}
-
 export default function Timeline({
   children,
   className,
@@ -247,8 +220,6 @@ export default function Timeline({
   const isVertical = orientation === "vertical";
 
   const safePadding = Math.max(0, (horizItemWidth - horizItemSpacing) / 2);
-
-  const scrollRef = useHorizontalScroll();
 
   const [verticalPadding, setVerticalPadding] = useState({ top: 0, bottom: 0 });
   const listRef = useRef<HTMLUListElement>(null);
@@ -308,13 +279,9 @@ export default function Timeline({
       id="timeline-container"
       className={cn(
         "flex h-full w-full p-4",
-        isVertical ? "flex-col" : "flex-row overflow-x-auto",
-        "snap-mandatory",
-        isVertical ? "snap-y" : "snap-x",
-        "[&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]",
+        isVertical ? "flex-col" : "flex-row",
         className
       )}
-      ref={isVertical ? null : scrollRef}
       role="list"
       aria-orientation={orientation}
       aria-label="Timeline"
