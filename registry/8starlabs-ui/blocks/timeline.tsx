@@ -27,7 +27,7 @@ const timelineDotVariants = cva(
         default: "border-primary",
         secondary: "border-secondary",
         destructive: "border-destructive",
-        outline: "border-input"
+        outline: ""
       },
       hollow: {
         true: "border-2 bg-card",
@@ -53,7 +53,7 @@ const timelineDotVariants = cva(
       {
         hollow: false,
         variant: "outline",
-        class: "bg-input"
+        class: "bg-background"
       }
     ],
     defaultVariants: {

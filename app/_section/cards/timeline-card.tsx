@@ -1,3 +1,4 @@
+import ScrollFade from "@/registry/8starlabs-ui/blocks/scroll-fade";
 import Timeline, {
   TimelineItem,
   TimelineItemDate,
@@ -63,17 +64,21 @@ const TimelineCard = (props: Props) => {
             </p>
           </div>
 
-          <Timeline orientation="horizontal">
-            {timelineData.map((item, idx) => (
-              <TimelineItem key={idx} variant={item.variant}>
-                <TimelineItemDate>{item.date.toDateString()}</TimelineItemDate>
-                <TimelineItemTitle>{item.title}</TimelineItemTitle>
-                <TimelineItemDescription>
-                  {item.description}
-                </TimelineItemDescription>
-              </TimelineItem>
-            ))}
-          </Timeline>
+          <ScrollFade axis="horizontal">
+            <Timeline orientation="horizontal">
+              {timelineData.map((item, idx) => (
+                <TimelineItem key={idx} variant={item.variant}>
+                  <TimelineItemDate>
+                    {item.date.toDateString()}
+                  </TimelineItemDate>
+                  <TimelineItemTitle>{item.title}</TimelineItemTitle>
+                  <TimelineItemDescription>
+                    {item.description}
+                  </TimelineItemDescription>
+                </TimelineItem>
+              ))}
+            </Timeline>
+          </ScrollFade>
         </div>
         <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
           <svg
