@@ -2,13 +2,7 @@
 
 import { cn } from "@/lib/utils";
 import { cva, VariantProps } from "class-variance-authority";
-import {
-  CSSProperties,
-  HTMLAttributes,
-  ReactNode,
-  useEffect,
-  useState
-} from "react";
+import { HTMLAttributes, memo, ReactNode, useEffect, useState } from "react";
 
 const flipUnitVariants = cva(
   "relative subpixel-antialiased perspective-[1000px] rounded-md overflow-hidden",
@@ -42,13 +36,13 @@ interface FlipUnitProps
   digit: number | string;
 }
 
-export function FlipUnit({ digit, size, variant, className }: FlipUnitProps) {
+const commonCardStyle = cn(
+  "absolute inset-x-0 overflow-hidden h-1/2 bg-inherit text-inherit"
+);
+
+const FlipUnit = memo(({ digit, size, variant, className }: FlipUnitProps) => {
   const [prevDigit, setPrevDigit] = useState(digit);
   const [flipping, setFlipping] = useState(false);
-
-  const commonCardStyle = cn(
-    "absolute inset-x-0 overflow-hidden h-1/2 bg-inherit text-inherit"
-  );
 
   useEffect(() => {
     if (digit !== prevDigit) {
@@ -99,44 +93,9 @@ export function FlipUnit({ digit, size, variant, className }: FlipUnitProps) {
 
       {/* Center Divider Shadow */}
       <div className="absolute top-1/2 left-0 w-full h-[3px] -translate-y-1/2 bg-background/50 z-30" />
-
-      {/* Injected Keyframes (The Shadcn "Cheat Code") */}
-      <style jsx global>{`
-        /* Use the same duration for both to keep them in sync */
-        .animate-flip-top {
-          animation: flip-top-anim 0.6s ease-in forwards;
-        }
-        .animate-flip-bottom {
-          animation: flip-bottom-anim 0.6s ease-out forwards;
-        }
-
-        @keyframes flip-top-anim {
-          0% {
-            transform: rotateX(0deg);
-            z-index: 30;
-          }
-          50%,
-          100% {
-            transform: rotateX(-90deg);
-            z-index: 10;
-          }
-        }
-
-        @keyframes flip-bottom-anim {
-          0%,
-          50% {
-            transform: rotateX(90deg);
-            z-index: 10;
-          }
-          100% {
-            transform: rotateX(0deg);
-            z-index: 30;
-          }
-        }
-      `}</style>
     </div>
   );
-}
+});
 
 interface DigitSpanProps {
   children: ReactNode;
@@ -193,6 +152,7 @@ interface FlipClockProps
     HTMLAttributes<HTMLDivElement> {
   countdown?: boolean;
   targetDate?: Date;
+  showDays?: "auto" | "always" | "never";
 }
 
 interface TimeLeft {
@@ -202,14 +162,18 @@ interface TimeLeft {
   seconds: number;
 }
 
-function ClockSeparator({ size }: { size?: "sm" | "md" | "lg" | "xl" }) {
-  const heightMap = {
-    sm: "text-4xl",
-    md: "text-5xl",
-    lg: "text-6xl",
-    xl: "text-8xl"
-  };
+type FlipClockSize = NonNullable<
+  VariantProps<typeof flipClockVariants>["size"]
+>;
 
+const heightMap: Record<FlipClockSize, string> = {
+  sm: "text-4xl",
+  md: "text-5xl",
+  lg: "text-6xl",
+  xl: "text-8xl"
+};
+
+function ClockSeparator({ size }: { size?: FlipClockSize }) {
   return (
     <span
       className={cn(
@@ -227,6 +191,7 @@ export default function FlipClock({
   targetDate,
   size,
   variant,
+  showDays = "auto",
   className,
   ...props
 }: FlipClockProps) {
@@ -245,13 +210,22 @@ export default function FlipClock({
   const minutesStr = String(time.minutes).padStart(2, "0");
   const secondsStr = String(time.seconds).padStart(2, "0");
 
+  const shouldShowDays =
+    countdown &&
+    (showDays === "always" || (showDays === "auto" && time.days > 0));
+
   return (
     <div
       className={cn(flipClockVariants({ size, variant }), className)}
+      aria-live="polite"
       {...props}
     >
-      {/* Days: show only if countdown is true and days are greater than 0 */}
-      {countdown && time.days > 0 && (
+      <span className="sr-only">
+        {`${time.hours}:${time.minutes}:${time.seconds}`}
+      </span>
+
+      {/* Days */}
+      {shouldShowDays && (
         <>
           {daysStr.split("").map((digit, i) => (
             <FlipUnit
@@ -298,6 +272,41 @@ export default function FlipClock({
           variant={variant}
         />
       ))}
+
+      {/* Injected Keyframes (The Shadcn "Cheat Code") */}
+      <style jsx global>{`
+        /* Use the same duration for both to keep them in sync */
+        .animate-flip-top {
+          animation: flip-top-anim 0.6s ease-in forwards;
+        }
+        .animate-flip-bottom {
+          animation: flip-bottom-anim 0.6s ease-out forwards;
+        }
+
+        @keyframes flip-top-anim {
+          0% {
+            transform: rotateX(0deg);
+            z-index: 30;
+          }
+          50%,
+          100% {
+            transform: rotateX(-90deg);
+            z-index: 10;
+          }
+        }
+
+        @keyframes flip-bottom-anim {
+          0%,
+          50% {
+            transform: rotateX(90deg);
+            z-index: 10;
+          }
+          100% {
+            transform: rotateX(0deg);
+            z-index: 30;
+          }
+        }
+      `}</style>
     </div>
   );
 }
